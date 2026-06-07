@@ -3,6 +3,7 @@
 # Import environment
 import gymnasium as gym
 from gymnasium import spaces
+from gymnasium.vector import AutoresetMode
 
 # Import ML libraries
 import numpy as np
@@ -76,7 +77,7 @@ class Agent:
     
     def train(self, render=False):
         # Build the environments (vectorized envs)
-        self.envs = gym.vector.SyncVectorEnv([make_env(self.env_id, render, **self.env_make_params)  for _ in range(self.num_envs)])
+        self.envs = gym.vector.SyncVectorEnv([make_env(self.env_id, render, **self.env_make_params)  for _ in range(self.num_envs)], autoreset_mode=AutoresetMode.SAME_STEP)
         
         # Create the Actor-Critic networks, target networks, optimizers, and loss function
         actor = Actor(self.envs).to(device)
@@ -136,19 +137,22 @@ class Agent:
             next_obs, rewards, terminations, truncations, infos = self.envs.step(actions)
 
             # Logging & saving model logic
-            if "final_info" in infos:
-                for info in infos["final_info"]:
-                    if info and "episode" in info:
-                        r = float(info["episode"]["r"]) # float bc it's usually a length-1 array
+            if "final_info" in infos: # final info only where at least one subenv finished an episode
+                ep = infos["final_info"]["episode"] # ep is stats dict that RecordEpisodeStatistics produced, stored column-wise
+                finished = infos["final_info"]["_episode"] # boolean mask — true if env i completed an episode this step
+                for i in range(self.envs.num_envs): # walk each env
+                    if finished[i]: # Act only on the envs that finished
+                        # Logging
+                        r = float(ep["r"][i]) # float bc it's usually a length-1 array
                         episodic_returns.append((global_step, r))
                         self._log(f"global_step={global_step}, episodic_return={r:.1f}")
             
-                    # Save the model if it's good
-                    recent = [r for _, r in episodic_returns[-100:]]
-                    mean_return = sum(recent)/len(recent)
-                    if mean_return > best_return:
-                        best_return = mean_return
-                        torch.save(actor.state_dict(), self.MODEL_FILE)
+                        # Best model check & save
+                        recent = [r for _, r in episodic_returns[-100:]]
+                        mean_return = sum(recent)/len(recent)
+                        if mean_return > best_return:
+                            best_return = mean_return
+                            torch.save(actor.state_dict(), self.MODEL_FILE)
             
             # Update graph every 30 seconds
             if datetime.now() - last_graph_update_time > timedelta(seconds=30):
@@ -161,7 +165,7 @@ class Agent:
             real_next_obs = next_obs.copy()
             for idx, trunc in enumerate(truncations):
                 if trunc:
-                    real_next_obs[idx] = infos["final_observation"][idx]
+                    real_next_obs[idx] = infos["final_obs"][idx]
             rb.add(obs, actions, rewards, real_next_obs, terminations)
 
             # Crucial. Else, the agent feeds the old observation back into the actor network, getting stuck in a loop of the same state
@@ -251,6 +255,7 @@ class Agent:
 def make_env(env_id, render=False, **env_make_params):
     def thunk():
         env = gym.make(env_id, render_mode="human" if render else None, **env_make_params)
+        env = gym.wrappers.RecordEpisodeStatistics(env)
         return env
     return thunk
 
@@ -263,6 +268,6 @@ if __name__ == '__main__':
     ddpg = Agent(hyperparameter_set=args.hyperparameters)
 
     if args.train:
-        ddpg.train()
+        ddpg.train() # python ddpg_agent.py --train ddpgbipedalwalker1
     else:
         ddpg.run()
