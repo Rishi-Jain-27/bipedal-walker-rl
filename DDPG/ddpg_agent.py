@@ -60,14 +60,14 @@ class Agent:
 
         # Training relevant params
         self.num_envs = hyperparameters['num_envs']
-        self.total_timesteps = hyperparameters['total_timesteps']
-        self.learning_rate = hyperparameters['learning_rate']
-        self.buffer_size = hyperparameters['buffer_size']
+        self.total_timesteps = int(hyperparameters['total_timesteps'])
+        self.learning_rate = float(hyperparameters['learning_rate'])
+        self.buffer_size = float(hyperparameters['buffer_size']) # ReplayBuffer int-casts this later
         self.gamma = hyperparameters['gamma']
         self.tau = hyperparameters['tau']
         self.batch_size = hyperparameters['batch_size']
         self.exploration_noise = hyperparameters['exploration_noise']
-        self.learning_starts = hyperparameters['learning_starts']
+        self.learning_starts = float(hyperparameters['learning_starts'])
         self.policy_frequency = hyperparameters['policy_frequency']
 
         # Path to run info
