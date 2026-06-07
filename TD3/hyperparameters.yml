@@ -1,0 +1,34 @@
+td3bipedalwalker_hard:
+  env_id: BipedalWalker-v3
+  env_make_params:
+    hardcore: True
+  num_envs: 4
+  total_timesteps: 4000000
+  learning_rate: 3e-4
+  buffer_size: 250000
+  gamma: 0.99
+  tau: 0.005
+  batch_size: 256
+  exploration_noise: 0.1
+  learning_starts: 25e3
+  policy_frequency: 2
+  policy_noise: 0.2
+  noise_clip: 0.5
+  death_penalty: -1
+
+td3bipedalwalker_easy:
+  env_id: BipedalWalker-v3
+  env_make_params:
+    hardcore: False
+  num_envs: 4
+  total_timesteps: 1000000
+  learning_rate: 3e-4
+  buffer_size: 250000
+  gamma: 0.99
+  tau: 0.005
+  batch_size: 256
+  exploration_noise: 0.1
+  learning_starts: 25e3
+  policy_frequency: 2
+  policy_noise: 0.2
+  noise_clip: 0.5
