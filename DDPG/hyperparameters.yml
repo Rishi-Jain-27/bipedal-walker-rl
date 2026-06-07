@@ -1,11 +1,11 @@
 ddpgbipedalwalker1:
   env_id: BipedalWalker-v3
   env_make_params:
-    hardcore: True
+    hardcore: False
   num_envs: 4
   total_timesteps: 1000000
   learning_rate: 3e-4
-  buffer_size: 1e6
+  buffer_size: 250000
   gamma: 0.99
   tau: 0.005
   batch_size: 256
