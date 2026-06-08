@@ -9,7 +9,6 @@ from gymnasium.vector import AutoresetMode
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 
 # Import stuff from other files
@@ -241,7 +240,7 @@ class Agent:
                     target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
             
             for param, target_param in zip(critic.parameters(), target_critic.parameters()):
-                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)        
+                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
     def run(self):
         # Build the env (single)
