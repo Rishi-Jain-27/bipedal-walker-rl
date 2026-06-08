@@ -324,7 +324,7 @@ class Agent:
         envs = gym.vector.SyncVectorEnv([make_env(self.env_id, render=True, **self.env_make_params)])
 
         actor = Actor(envs).to(device)
-        actor.load_state_dict(torch.load(self.MODEL_FILE, weights_only=True))
+        actor.load_state_dict(torch.load(self.MODEL_FILE, weights_only=True, map_location=torch.device('cpu')))
         actor.eval()
         state, _ = envs.reset() # vector envs auto-reset, so this can be outside the loop
 
@@ -373,4 +373,4 @@ if __name__ == '__main__':
     if args.train:
         sac.train() # python sac_agent.py --train sacbipedalwalker_hard
     else:
-        sac.run()
+        sac.run() # python sac_agent.py sacbipedalwalker_hard
