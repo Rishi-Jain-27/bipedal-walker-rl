@@ -371,6 +371,6 @@ if __name__ == '__main__':
     sac = Agent(hyperparameter_set=args.hyperparameters)
 
     if args.train:
-        sac.train() # python sac_agent.py --train sacbipedalwalker1_hard
+        sac.train() # python sac_agent.py --train sacbipedalwalker_hard
     else:
         sac.run()
